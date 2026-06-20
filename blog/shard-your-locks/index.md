@@ -156,7 +156,7 @@ func (c *Sharded) Get(key string) (string, bool) {
 	p := c.at(key)
 	p.mu.Lock()
 	v, ok := p.m[key]
-	p.mu.Unlock() // not defer: it has overhead, and this is a post about ns
+	p.mu.Unlock() // explicit, not defer (+8% here — see note below)
 	return v, ok
 }
 
@@ -171,6 +171,13 @@ func (c *Sharded) Set(key, value string) {
 That's the whole idea. The [real version](https://github.com/kluyg/in-memory-cache/blob/main/sharded.go)
 adds `Delete`/`Len` and pads each shard onto its own cache line (so locking one
 shard doesn't bounce a neighbor's cache line), but the engine is right here.
+
+About that explicit `Unlock`: Go 1.14's open-coded defers made a single leaf
+`defer` *cheap* — zero extra allocations — but not free. Measured on Go 1.26,
+`defer p.mu.Unlock()` here costs **+8% (≈1 ns)** over an explicit unlock
+(11.6 → 12.6 ns, p < 0.001). Tiny in isolation, but on a path this hot 8% is 8%,
+so the hot methods unlock explicitly. Re-run it yourself:
+[`defer_test.go`](https://github.com/kluyg/in-memory-cache/blob/main/defer_test.go).
 
 ## What to actually use
 
