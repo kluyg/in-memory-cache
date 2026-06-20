@@ -85,6 +85,15 @@ collide on a few shards while the rest sit idle. `cow` is the control: its
 balanced mix is flat (1.03×), because it copies the whole map on every write
 regardless of key, so the distribution can't change its write cost.
 
+### Shard count: why 256?
+
+![Shard count vs throughput](charts/shard_count_8cores.png)
+
+Sweeping the shard count (balanced mix, uniform, 8 cores): one lock → 256 is a
+9× throughput jump (4.6 → 43 Mops/s), then it flattens — 1024 buys +13%, 4096
+only +18%, for 4×/16× the maps + mutexes. 256 sits in the knee. Reproduce with
+`go test -bench=BenchmarkShardCount -cpu=8`.
+
 ### Latency at 8 cores (ns/op, lower is better)
 
 Uniform distribution:

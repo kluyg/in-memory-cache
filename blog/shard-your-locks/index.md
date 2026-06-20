@@ -179,6 +179,19 @@ About that explicit `Unlock`: Go 1.14's open-coded defers made a single leaf
 so the hot methods unlock explicitly. Re-run it yourself:
 [`defer_test.go`](https://github.com/kluyg/in-memory-cache/blob/main/defer_test.go).
 
+### Why 256 shards?
+
+Enough to kill contention, not so many you're wasting memory. Sweeping the shard
+count at 8 cores on the balanced mix, throughput climbs steeply to ~256 and then
+flattens:
+
+![Shard count vs throughput](shard_count_8cores.png)
+
+One lock to 256 is a **9× jump** (4.6 → 43 Mops/s). Past 256 the returns
+collapse: 1024 buys +13%, 4096 only +18% — for 4× and 16× the shards, each an
+extra map, mutex, and cache line. 256 sits right in the knee. (Tune it for your
+core count and write ratio; the sweep is one benchmark away.)
+
 ## What to actually use
 
 - **Default to `sharded`.** Best or near-best everywhere, scales with cores,

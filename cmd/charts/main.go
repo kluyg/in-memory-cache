@@ -251,6 +251,55 @@ func skewChart() {
 	writeFile("skew_speedup_8cores.svg", b.String())
 }
 
+// shardCountChart: throughput vs shard count (balanced mix, uniform, 8 cores),
+// showing where the contention curve flattens. Answers "why 256?".
+func shardCountChart() {
+	const w, h = 720, 430
+	const ml, mr, mt, mb = 58, 20, 66, 54
+	plotW, plotH := float64(w-ml-mr), float64(h-mt-mb)
+	x0, y0 := float64(ml), float64(mt)
+	labels := []string{"1", "16", "64", "256", "1024", "4096"}
+	nsv := []float64{215.5, 46.76, 29.91, 23.45, 20.75, 19.85}
+	ymax := 55.0
+	sx := func(i int) float64 { return x0 + float64(i)*plotW/float64(len(labels)-1) }
+	sy := func(v float64) float64 { return y0 + plotH*(1-v/ymax) }
+
+	var b strings.Builder
+	svgHeader(&b, w, h, "Shard count vs throughput",
+		"Throughput in millions of ops/sec versus shard count, balanced 50/50 mix, uniform keys, 8 cores; the curve flattens past 256 shards.")
+	f(&b, `<text x="20" y="26" font-size="15" font-weight="500" fill="%s">how many shards? &#8212; balanced mix, uniform, 8 cores</text>`, txt)
+	f(&b, `<text x="20" y="44" font-size="12" fill="%s">more shards &#8594; less lock contention, with sharp diminishing returns past 256</text>`, muted)
+
+	for k := 0; k <= 5; k++ {
+		v := ymax * float64(k) / 5
+		yy := sy(v)
+		f(&b, `<line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" stroke="%s" stroke-width="1"/>`, x0, yy, x0+plotW, yy, gridc)
+		f(&b, `<text x="%.1f" y="%.1f" font-size="10" fill="%s" text-anchor="end">%.0f</text>`, x0-6, yy+3, muted, v)
+	}
+	for i := range labels {
+		f(&b, `<text x="%.1f" y="%.1f" font-size="11" fill="%s" text-anchor="middle">%s</text>`, sx(i), y0+plotH+18, muted, labels[i])
+	}
+	f(&b, `<text x="%.1f" y="%.1f" font-size="11" fill="%s" text-anchor="middle">shards</text>`, x0+plotW/2, y0+plotH+38, muted)
+	f(&b, `<text x="20" y="%.1f" font-size="11" fill="%s" text-anchor="middle" transform="rotate(-90 20 %.1f)">Mops/s</text>`, y0+plotH/2, muted, y0+plotH/2)
+
+	hx := sx(3) // highlight default = 256
+	f(&b, `<line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" stroke="#534AB7" stroke-width="1.5" stroke-dasharray="4,3"/>`, hx, y0, hx, y0+plotH)
+	f(&b, `<text x="%.1f" y="%.1f" font-size="10.5" fill="#534AB7" text-anchor="middle">default = 256</text>`, hx, y0-5)
+
+	var pts strings.Builder
+	for i := range labels {
+		pts.WriteString(fmt.Sprintf("%.1f,%.1f ", sx(i), sy(1000.0/nsv[i])))
+	}
+	f(&b, `<polyline points="%s" fill="none" stroke="#1D9E75" stroke-width="3"/>`, strings.TrimSpace(pts.String()))
+	for i := range labels {
+		t := 1000.0 / nsv[i]
+		f(&b, `<circle cx="%.1f" cy="%.1f" r="3.5" fill="#1D9E75"/>`, sx(i), sy(t))
+		f(&b, `<text x="%.1f" y="%.1f" font-size="10" fill="%s" text-anchor="middle">%.0f</text>`, sx(i), sy(t)-8, txt, t)
+	}
+	b.WriteString("</svg>")
+	writeFile("shard_count_8cores.svg", b.String())
+}
+
 func main() {
 	if err := os.MkdirAll("charts", 0o755); err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -260,4 +309,5 @@ func main() {
 	gridChart("zipf", 145)
 	efficiencyChart()
 	skewChart()
+	shardCountChart()
 }
