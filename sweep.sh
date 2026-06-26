@@ -9,8 +9,8 @@
 # so progress is observable with `tail -f`.
 set -uo pipefail
 
-GO="/c/Program Files/Go/bin/go.exe"
-BENCHSTAT="/c/Users/streb/go/bin/benchstat.exe"
+GO="go"
+BENCHSTAT="$HOME/go/bin/benchstat"
 
 KEYS="${KEYS:-1000000}"
 KEYLEN="${KEYLEN:-16}"
@@ -26,8 +26,8 @@ RAW="$OUT/bench.txt"
 
 common=(-benchmem -count="$COUNT" -cpu="$CPU" -keys="$KEYS" -keylen="$KEYLEN" -run '^$')
 
-echo "### phase A: fast impls (mutex|rwmutex|syncmap|sharded), -benchtime=$BT"
-"$GO" test -bench 'BenchmarkCache/impl=(mutex|rwmutex|syncmap|sharded)' \
+echo "### phase A: fast impls (mutex|rwmutex|syncmap|sharded,syncXmap,otter), -benchtime=$BT"
+"$GO" test -bench 'BenchmarkCache/impl=(mutex|rwmutex|syncmap|sharded|syncXmap|otter)' \
   "${common[@]}" -benchtime="$BT" | tee -a "$RAW"
 
 # Anchor mix with $ -- "r10" is a substring of "r100".
