@@ -46,6 +46,8 @@ var Concurrent = []Impl{
 	{"mutex", func() Cache { return NewMutex() }},
 	{"rwmutex", func() Cache { return NewRWMutex() }},
 	{"syncmap", func() Cache { return NewSyncMap() }},
+	{"syncXmap", func() Cache { return NewSyncXMap() }},
+	{"otter", func() Cache { return NewOtter() }},
 	{"sharded", func() Cache { return NewSharded() }},
 	{"cow", func() Cache { return NewCOW() }},
 }
