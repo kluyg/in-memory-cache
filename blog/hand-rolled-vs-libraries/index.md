@@ -30,7 +30,7 @@ cache, and eviction isn't free.
 | Cache | What it is | Notes |
 |---|---|---|
 | `sharded` | 256 mutex-guarded shards (the hand-rolled champion) | stdlib only, zero deps, zero alloc. |
-| `xsync` | `puzpuzpuz/xsync/v4` `MapOf` | CLHT — lock-free reads, cooperative rehashing. |
+| `xsync` | `puzpuzpuz/xsync/v4` `Map` | CLHT — lock-free reads, cooperative rehashing. |
 | `otter` | `maypok86/otter/v2` | W-TinyLFU eviction cache (sized so nothing evicts here). |
 | `sync.Map` | stdlib | The standard library's own concurrent map, for reference. |
 | `cow` | copy-on-write (stdlib) | Lock-free reads, but O(n) writes — the read ceiling. |
