@@ -50,6 +50,7 @@ var Concurrent = []Impl{
 	{"otter", func() Cache { return NewOtter() }},
 	{"sharded", func() Cache { return NewSharded() }},
 	{"cow", func() Cache { return NewCOW() }},
+	{"cowmap", func() Cache { return NewCowMap() }},
 }
 
 // All includes the naive (unsynchronized) implementation in addition to the

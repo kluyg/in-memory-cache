@@ -1,8 +1,9 @@
 module inmemcache
 
-go 1.24.0
+go 1.26.4
 
 require (
+	github.com/gebi/cowmap v0.0.0-20260628204005-b50f0db35ebe
 	github.com/maypok86/otter/v2 v2.3.0
 	github.com/puzpuzpuz/xsync/v4 v4.5.0
 )
