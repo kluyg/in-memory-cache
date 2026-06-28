@@ -9,8 +9,10 @@
 # so progress is observable with `tail -f`.
 set -uo pipefail
 
-GO="go"
-BENCHSTAT="$HOME/go/bin/benchstat"
+# Overridable so non-PATH setups (e.g. Windows Git Bash) can point at the exes:
+#   GO="/c/Program Files/Go/bin/go.exe" BENCHSTAT="/c/Users/me/go/bin/benchstat.exe" bash sweep.sh
+GO="${GO:-go}"
+BENCHSTAT="${BENCHSTAT:-$HOME/go/bin/benchstat}"
 
 KEYS="${KEYS:-1000000}"
 KEYLEN="${KEYLEN:-16}"
